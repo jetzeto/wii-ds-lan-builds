@@ -1,0 +1,22 @@
+{
+  "project": "Dolphin Wii-DS LAN experiment",
+  "source": "https://github.com/ATEMVEGETA/dolphin",
+  "revision": "36c502b448d3d7ffa83398021b02bde49cee5e01",
+  "tag": "wii-ds-link-v0.2.0-beta.4",
+  "patchSHA256": "76088D1FE8435AD13445BE24911159C2A6A4AFD84C2D65B99E8BC3BAFCF2A588",
+  "executableSHA256": "5D6F28E488D3D507BC8697DF3B38D935F84D3B8E493104A7075E709E289F50DB",
+  "compiler": "MSVC 19.51.36263 (workspace-local)",
+  "sdk": "10.0.26100.3916 NuGet, headers 10.0.26100.0",
+  "qt": "6.8.3, upstream pinned x64 MSVC binaries",
+  "configuration": "Release; bundled dependencies; automatic updates disabled",
+  "gameplayVerified": false,
+  "verified": [
+    "Release build successful",
+    "Real INI save/reload and peer precedence tests passed",
+    "Packaged runtime DLL import closure",
+    "Packaged --help startup exit 0"
+  ],
+  "visualUiVerified": false,
+  "visualUiCheckLimitation": "Computer Use was not approved for Dolphin",
+  "peerSettingsLocation": "Settings > Wii > melonDS device IPv4 address; User/Config/WiiDSBridge.ini PeerIPv4"
+}

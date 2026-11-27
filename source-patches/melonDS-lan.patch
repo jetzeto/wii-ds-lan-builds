@@ -1,0 +1,104 @@
+diff --git a/src/net/WiiDSBridge.cpp b/src/net/WiiDSBridge.cpp
+index 040f885..a99d684 100644
+--- a/src/net/WiiDSBridge.cpp
++++ b/src/net/WiiDSBridge.cpp
+@@ -7,6 +7,7 @@
+ #include "WiiDSBridge.h"
+ #include "WiiDSBeacon.h"
+ #include "WiiDSMPConfig.h"
++#include "WiiDSLanConfig.h"
+ #include "Platform.h"
+ #include <algorithm>
+ #include <atomic>
+@@ -184,6 +185,7 @@ explicit Context(void* owner) : Owner(owner), ContextID(++NextContextID) {}
+ ~Context() { CloseDiagnostic(); if (Listener != InvalidSocket) CloseSocket(Listener); }
+ void* Owner;
+ u64 ContextID;
++const WiiDSLan::Config Transport = WiiDSLan::FromEnvironment();
+ bool Diagnostics = false;
+ bool DiagnosticFileFull = false;
+ std::unique_ptr<DiagnosticSink> DiagnosticFile;
+@@ -357,6 +359,7 @@ bool SamePeer(const sockaddr_in& sender)
+ }
+ void EnsureSocket()
+ {
++    if (!Transport.valid) return;
+     if (Listener != InvalidSocket) return;
+     const auto now = Platform::GetMSCount();
+     if (LastBind && now - LastBind < 1000) return;
+@@ -377,7 +380,8 @@ void EnsureSocket()
+                reinterpret_cast<const char*>(&exclusive), sizeof(exclusive));
+ #endif
+     sockaddr_in address{};
+-    address.sin_family = AF_INET; address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
++    address.sin_family = AF_INET;
++    address.sin_addr.s_addr = htonl(Transport.IsLocal() ? INADDR_LOOPBACK : INADDR_ANY);
+     address.sin_port = htons(port);
+     if (::bind(socket, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) != 0)
+     {
+@@ -540,7 +544,9 @@ void Pump()
+             }
+             break;
+         }
+-        if (sender.sin_family != AF_INET || sender.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) continue;
++        const auto& ip = Transport.peer;
++        const u32 allowed = (u32(ip[0]) << 24) | (u32(ip[1]) << 16) | (u32(ip[2]) << 8) | ip[3];
++        if (sender.sin_family != AF_INET || sender.sin_addr.s_addr != htonl(allowed)) continue;
+         if (received == static_cast<int>(sizeof(Hello)-1) && !std::memcmp(packet.data(), Hello, sizeof(Hello)-1))
+         {
+             if (HavePeer && !SamePeer(sender)) continue; // A second Dolphin cannot silently take over.
+diff --git a/src/net/WiiDSLanConfig.h b/src/net/WiiDSLanConfig.h
+new file mode 100644
+index 0000000..21255b5
+--- /dev/null
++++ b/src/net/WiiDSLanConfig.h
+@@ -0,0 +1,49 @@
++// SPDX-License-Identifier: MIT
++// Shared experimental transport configuration; copied into each source tree.
++#pragma once
++#include <array>
++#include <cstdlib>
++#include <string_view>
++
++namespace WiiDSLan
++{
++struct Config
++{
++    bool valid = true;
++    std::array<unsigned char, 4> peer{127, 0, 0, 1};
++    bool IsLocal() const { return peer == std::array<unsigned char, 4>{127, 0, 0, 1}; }
++};
++
++inline Config Parse(const char* value)
++{
++    Config result;
++    if (!value || !*value) return result;
++    const std::string_view text(value);
++    size_t position = 0;
++    for (auto& octet : result.peer)
++    {
++        unsigned number = 0;
++        const size_t start = position;
++        while (position < text.size() && text[position] >= '0' && text[position] <= '9')
++        {
++            number = number * 10 + unsigned(text[position++] - '0');
++            if (position - start > 3 || number > 255) { result.valid = false; return result; }
++        }
++        if (position == start || (position - start > 1 && text[start] == '0'))
++        { result.valid = false; return result; }
++        octet = static_cast<unsigned char>(number);
++        if (&octet != &result.peer.back())
++        {
++            if (position == text.size() || text[position++] != '.')
++            { result.valid = false; return result; }
++        }
++    }
++    // Only unicast destinations. Keep the historical loopback address available.
++    result.valid = position == text.size() && result.peer[0] != 0 &&
++                   result.peer[0] < 224 && result.peer[3] != 255 &&
++                   (result.peer[0] != 127 || result.IsLocal());
++    return result;
++}
++
++inline Config FromEnvironment() { return Parse(std::getenv("WII_DS_PEER_IPV4")); }
++}

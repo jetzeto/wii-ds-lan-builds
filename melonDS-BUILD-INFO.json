@@ -1,0 +1,23 @@
+{
+  "project": "melonDS Wii-DS LAN experiment",
+  "source": "https://github.com/ATEMVEGETA/melonDS",
+  "tag": "wii-ds-link-v0.2.0-beta.4",
+  "originalArchiveSHA256": "651A527BFFFAA26ADAA9BA6375095B1380F64A2DA63AA8837F731701FA59EEE9",
+  "patchSHA256": "1E2AAD0B465AB7D77CE990A645968845070E2836E5EA8FD507201FC7E0D4E092",
+  "executableSHA256": "03855FF4ACFCEC4039645EAA12851D052C77623F1AE5166EA68CF3ED8F2799BD",
+  "compiler": "GCC 16.2.0 (MSYS2 UCRT64)",
+  "cmake": "4.4.3",
+  "qt": "6.11.2",
+  "configuration": "Release; dynamic libraries; LTO disabled; PORTABLE=ON",
+  "verified": [
+    "Compiled full desktop emulator",
+    "Packaged DLL import closure",
+    "Offscreen --help exit 0",
+    "Transport harness: loopback and same-PC LAN interface"
+  ],
+  "unverified": [
+    "Two physical devices",
+    "My Pokemon Ranch gameplay/transfers",
+    "Android"
+  ]
+}
