@@ -5,7 +5,7 @@ x64 builds. This repository and its release assets are private.
 
 ## Downloads
 
-Open the [Windows release](../../releases/tag/windows-lan-2026-11-27) and download:
+Open the [Windows release](https://github.com/jetzeto/wii-ds-lan-builds/releases/tag/windows-lan-2026-11-27) and download:
 
 - `Dolphin-LAN-IP-Settings-Windows-x64.zip`: Dolphin with persistent LAN peer IP
   settings under Settings → Wii.
